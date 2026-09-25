@@ -1,0 +1,10 @@
+{
+  "name": "Hearthmend",
+  "version_number": "1.0.0",
+  "website_url": "https://github.com/BlackHearthx/Hearthmend",
+  "description": "Hold Use on a craft station and it watches the homestead — mending what that station would with the hammer, ships and carts included.",
+  "dependencies": [
+    "denikson-BepInExPack_Valheim-5.4.2200",
+    "ValheimModding-Jotunn-2.29.2"
+  ]
+}

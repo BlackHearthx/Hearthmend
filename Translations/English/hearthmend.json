@@ -1,0 +1,9 @@
+{
+  "hearthmend_hover": "\n[<color=yellow><b>Hold $KEY_Use</b></color>] Hearthmend: {0}",
+  "hearthmend_on": "<color=#55FF55>on</color>",
+  "hearthmend_off": "<color=#FF5555>off</color>",
+  "hearthmend_toggle_on": "Hearthmend is watching this station",
+  "hearthmend_toggle_off": "Hearthmend won't touch this station",
+  "hearthmend_repaired": "Mended {0} pieces",
+  "hearthmend_morning": "Morning mend — fixed {0} pieces"
+}

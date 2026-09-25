@@ -1,0 +1,77 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="Environment.props" Condition="Exists('Environment.props')" />
+
+  <PropertyGroup>
+    <TargetFramework>net462</TargetFramework>
+    <OutputType>Library</OutputType>
+    <AssemblyName>Hearthmend</AssemblyName>
+    <RootNamespace>Hearthmend</RootNamespace>
+    <LangVersion>latest</LangVersion>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <Nullable>disable</Nullable>
+    <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
+    <GenerateTargetFrameworkAttribute>false</GenerateTargetFrameworkAttribute>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <CopyLocalLockFileAssemblies>false</CopyLocalLockFileAssemblies>
+    <DebugType>portable</DebugType>
+    <Version>1.0.0</Version>
+    <Authors>blackhearthx</Authors>
+    <Description>Station auto-repair for the homestead — each craft station mends what it would with the hammer, including ships and carts.</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="JotunnLib" Version="2.29.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Remove="_ref_repair_decompile\**" />
+    <None Remove="_ref_repair_decompile\**" />
+    <Compile Remove="_ref\**" />
+    <None Remove="_ref\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="Translations\**\*.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+  <Target Name="DeployToValheim" AfterTargets="Build">
+    <MakeDir Directories="$(MOD_DEPLOYPATH)" Condition="'$(MOD_DEPLOYPATH)' != ''" />
+    <Copy SourceFiles="$(TargetPath)" DestinationFolder="$(MOD_DEPLOYPATH)" Condition="'$(MOD_DEPLOYPATH)' != '' And Exists('$(TargetPath)')" />
+    <ItemGroup Condition="'$(MOD_DEPLOYPATH)' != ''">
+      <_HmLocFiles Include="$(OutputPath)Translations\**\*.json" />
+    </ItemGroup>
+    <Copy
+      SourceFiles="@(_HmLocFiles)"
+      DestinationFiles="@(_HmLocFiles->'$(MOD_DEPLOYPATH)\Translations\%(RecursiveDir)%(Filename)%(Extension)')"
+      Condition="'$(MOD_DEPLOYPATH)' != '' And '@(_HmLocFiles)' != ''"
+      SkipUnchangedFiles="true" />
+  </Target>
+
+  <!-- dotnet build Hearthmend.csproj -c Release -t:Package -->
+  <Target Name="Package" DependsOnTargets="Build">
+    <PropertyGroup>
+      <_HmStage>$(MSBuildProjectDirectory)\dist\stage</_HmStage>
+      <_HmZip>$(MSBuildProjectDirectory)\dist\Hearthmend-$(Version).zip</_HmZip>
+    </PropertyGroup>
+
+    <RemoveDir Directories="$(_HmStage)" />
+    <MakeDir Directories="$(_HmStage)\plugins" />
+
+    <Copy SourceFiles="manifest.json;README.md;CHANGELOG.md;icon.png" DestinationFolder="$(_HmStage)" />
+    <Copy SourceFiles="$(TargetPath)" DestinationFolder="$(_HmStage)\plugins" />
+
+    <ItemGroup>
+      <_HmPkgLoc Include="$(OutputPath)Translations\**\*.json" />
+    </ItemGroup>
+    <Copy
+      SourceFiles="@(_HmPkgLoc)"
+      DestinationFiles="@(_HmPkgLoc->'$(_HmStage)\plugins\Translations\%(RecursiveDir)%(Filename)%(Extension)')" />
+
+    <Delete Files="$(_HmZip)" />
+    <ZipDirectory SourceDirectory="$(_HmStage)" DestinationFile="$(_HmZip)" />
+    <RemoveDir Directories="$(_HmStage)" />
+    <Message Importance="high" Text="Thunderstore package ready: $(_HmZip)" />
+  </Target>
+</Project>

@@ -1,0 +1,9 @@
+{
+  "hearthmend_hover": "\n[<color=yellow><b>Segure $KEY_Use</b></color>] Hearthmend: {0}",
+  "hearthmend_on": "<color=#55FF55>ligado</color>",
+  "hearthmend_off": "<color=#FF5555>desligado</color>",
+  "hearthmend_toggle_on": "Hearthmend está de olho nesta estação",
+  "hearthmend_toggle_off": "Hearthmend não vai mexer nesta estação",
+  "hearthmend_repaired": "Remendou {0} peças",
+  "hearthmend_morning": "Remendo da manhã — arrumou {0} peças"
+}
