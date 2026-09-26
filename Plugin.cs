@@ -1,6 +1,7 @@
 using BepInEx;
 using HarmonyLib;
 using Jotunn;
+using Jotunn.Managers;
 using Jotunn.Utils;
 using UnityEngine;
 
@@ -13,7 +14,7 @@ namespace Hearthmend
     {
         public const string PluginGUID = "com.blackhearthx.hearthmend";
         public const string PluginName = "Hearthmend";
-        public const string PluginVersion = "1.0.2";
+        public const string PluginVersion = "1.0.3";
 
         /// <summary>Vanilla Player.m_removeRayMask minus terrain; "vehicle" is where ships and carts live.</summary>
         internal static int PieceMask { get; private set; }
@@ -28,6 +29,7 @@ namespace Hearthmend
             PieceMask = LayerMask.GetMask("Default", "static_solid", "Default_small", "piece", "piece_nonsolid", "vehicle");
             PluginConfig.Bind(Config);
             ModLocalization.Register();
+            PrefabManager.OnVanillaPrefabsAvailable += OnVanillaPrefabsAvailable;
 
             _harmony = new Harmony(PluginGUID);
             _harmony.PatchAll();
@@ -40,8 +42,15 @@ namespace Hearthmend
             RepairService.UpdateTimerLoop();
         }
 
+        private static void OnVanillaPrefabsAvailable()
+        {
+            PrefabManager.OnVanillaPrefabsAvailable -= OnVanillaPrefabsAvailable;
+            RepairService.RefreshBuildStationCatalog();
+        }
+
         private void OnDestroy()
         {
+            PrefabManager.OnVanillaPrefabsAvailable -= OnVanillaPrefabsAvailable;
             _harmony?.UnpatchSelf();
         }
     }

@@ -32,14 +32,64 @@ namespace Hearthmend
         private static readonly Dictionary<CraftingStation, float> StationTimers =
             new Dictionary<CraftingStation, float>(32);
 
+        private static readonly HashSet<string> BuildStationNames = new HashSet<string>();
+
         private static float _nextLoopCheckTime;
         private static float _holdTimer;
         private static bool _holdExecuted;
 
-        /// <summary>Any crafting station can watch: forge, stonecutter, workbench, etc.</summary>
+        /// <summary>
+        /// Collect station names that at least one build Piece requires.
+        /// That is the same list the hammer uses (workbench, forge, stonecutter, artisan, black forge, galdr).
+        /// Cauldrons and food tables never show up here.
+        /// </summary>
+        internal static void RefreshBuildStationCatalog()
+        {
+            var scene = ZNetScene.instance;
+            if (scene == null || scene.m_prefabs == null)
+            {
+                return;
+            }
+
+            BuildStationNames.Clear();
+            for (var i = 0; i < scene.m_prefabs.Count; i++)
+            {
+                var prefab = scene.m_prefabs[i];
+                if (prefab == null)
+                {
+                    continue;
+                }
+
+                var piece = prefab.GetComponent<Piece>();
+                if (piece == null || piece.m_craftingStation == null)
+                {
+                    continue;
+                }
+
+                var name = piece.m_craftingStation.m_name;
+                if (!string.IsNullOrEmpty(name))
+                {
+                    BuildStationNames.Add(name);
+                }
+            }
+
+            Jotunn.Logger.LogInfo($"Hearthmend: {BuildStationNames.Count} build station type(s) can watch");
+        }
+
+        /// <summary>Only stations the hammer needs for placing or mending buildings.</summary>
         internal static bool IsHearthmendStation(CraftingStation station)
         {
-            return station != null;
+            if (station == null)
+            {
+                return false;
+            }
+
+            if (BuildStationNames.Count == 0)
+            {
+                RefreshBuildStationCatalog();
+            }
+
+            return BuildStationNames.Contains(station.m_name);
         }
 
         /// <summary>

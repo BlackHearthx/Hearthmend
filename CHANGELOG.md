@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.0.3
+
+Hearthmend only watches stations the hammer needs for building: workbench,
+forge, stonecutter, artisan table, black forge, galdr table, and any other
+station a build piece actually requires. Cauldrons, mead kettles, and food
+prep tables no longer show the toggle.
+
 ## 1.0.2
 
 Stations keep working now. Before, a station mended once when you turned it on

@@ -6,8 +6,9 @@ Station mend for the homestead.
 
 You already know which bench builds the wall and which forge owns the iron.
 Hearthmend lets that same station keep an eye on what it built. Hold Use on a
-workbench, forge, stonecutter, artisan table, or any other craft station, and it
-starts watching. While you are around, it keeps mending the wear in range the
+workbench, forge, stonecutter, artisan table, or another station the hammer
+needs to build with, and it starts watching. Cooking pots and mead kettles stay
+out of it. While you are around, it keeps mending the wear in range the
 way the hammer would: each station only touches pieces that require it, and
 pieces with no station requirement can be mended from any watching one. Ships
 and carts count too.
@@ -17,7 +18,7 @@ the rain win while you sleep.
 
 ## What you get
 
-Any crafting station can watch. Hold Use for about half a second to turn watching
+Any build station can watch. Hold Use for about half a second to turn watching
 on or off, and the hover line tells you the state. While it watches, it mends
 damaged pieces in a circle around it (default twenty meters): walls, floors,
 doors, roofs, ships, carts, anything with wear that belongs to that station.
@@ -60,7 +61,8 @@ auto-repairs the same pieces, turn one of them off so they do not fight.
 
 ## Como usar (PT-BR)
 
-Qualquer bancada de craft pode vigiar. Segure Usar ~0,6s para ligar ou desligar.
+Qualquer bancada de construção pode vigiar (verstaque, forja, cortador de pedra
+e assim por diante). Caldeirão e hidromel não entram. Segure Usar ~0,6s para ligar ou desligar.
 Cada estação só conserta o que exigiria ela no martelo; peças sem exigência
 podem ser consertadas por qualquer estação vigiando. Inclui barcos e carros no
 raio. Assim que você liga, ela já faz uma primeira passada, peça por peça, com o
