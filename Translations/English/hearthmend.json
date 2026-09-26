@@ -5,5 +5,5 @@
   "hearthmend_toggle_on": "Hearthmend is watching this station",
   "hearthmend_toggle_off": "Hearthmend won't touch this station",
   "hearthmend_repaired": "Mended {0} pieces",
-  "hearthmend_morning": "Morning mend — fixed {0} pieces"
+  "hearthmend_morning": "Woke up to {0} pieces mended"
 }

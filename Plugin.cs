@@ -13,9 +13,9 @@ namespace Hearthmend
     {
         public const string PluginGUID = "com.blackhearthx.hearthmend";
         public const string PluginName = "Hearthmend";
-        public const string PluginVersion = "1.0.0";
+        public const string PluginVersion = "1.0.1";
 
-        /// <summary>Same piece layers Skarif used for OverlapSphere repair scans.</summary>
+        /// <summary>Vanilla Player.m_removeRayMask minus terrain; "vehicle" is where ships and carts live.</summary>
         internal static int PieceMask { get; private set; }
 
         internal static HearthmendPlugin Instance { get; private set; }
@@ -25,7 +25,7 @@ namespace Hearthmend
         private void Awake()
         {
             Instance = this;
-            PieceMask = LayerMask.GetMask("piece", "piece_nonsolid", "Default", "static_solid");
+            PieceMask = LayerMask.GetMask("Default", "static_solid", "Default_small", "piece", "piece_nonsolid", "vehicle");
             PluginConfig.Bind(Config);
             ModLocalization.Register();
 

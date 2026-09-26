@@ -23,7 +23,7 @@ namespace Hearthmend
                 "2. Repair",
                 "Repair Radius",
                 20f,
-                "How far from a watching station (workbench, forge, stonecutter, …) pieces get mended.");
+                "How far from a watching station (workbench, forge, stonecutter and so on) pieces get mended.");
 
             RepairInterval = cfg.Bind(
                 "2. Repair",
@@ -46,7 +46,7 @@ namespace Hearthmend
             ShowNotification = cfg.Bind(
                 "3. UI",
                 "Show Notification",
-                false,
+                true,
                 "Show a small HUD note when something gets mended.");
         }
     }

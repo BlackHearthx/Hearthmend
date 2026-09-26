@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
 using HarmonyLib;
@@ -16,11 +17,16 @@ namespace Hearthmend
 
         private const float HoldRequiredSeconds = 0.6f;
         private const float TimerScanPeriod = 0.25f;
+        private const float MendGapSeconds = 0.15f;
+        private const float MaxWaveSeconds = 6f;
+
+        private static readonly List<WearNTear> PendingMends = new List<WearNTear>(256);
 
         private static readonly FieldInfo AllStationsField =
             AccessTools.Field(typeof(CraftingStation), "m_allStations");
 
-        private static readonly Collider[] OverlapBuffer = new Collider[512];
+        private static readonly Collider[] OverlapBuffer = new Collider[4096];
+        private static bool _warnedBufferFull;
         private static readonly HashSet<Piece> ProcessedPieces = new HashSet<Piece>();
         private static readonly Dictionary<CraftingStation, float> StationTimers =
             new Dictionary<CraftingStation, float>(32);
@@ -29,7 +35,7 @@ namespace Hearthmend
         private static float _holdTimer;
         private static bool _holdExecuted;
 
-        /// <summary>Any crafting station can watch — forge, stonecutter, workbench, etc.</summary>
+        /// <summary>Any crafting station can watch: forge, stonecutter, workbench, etc.</summary>
         internal static bool IsHearthmendStation(CraftingStation station)
         {
             return station != null;
@@ -133,7 +139,7 @@ namespace Hearthmend
                 }
 
                 var nview = station.GetComponent<ZNetView>();
-                if (nview == null || !nview.IsValid() || !nview.IsOwner() || !GetEnabled(nview))
+                if (nview == null || !nview.IsValid() || !GetEnabled(nview))
                 {
                     continue;
                 }
@@ -193,7 +199,7 @@ namespace Hearthmend
                 }
 
                 var nview = station.GetComponent<ZNetView>();
-                if (nview == null || !nview.IsValid() || !nview.IsOwner() || !GetEnabled(nview))
+                if (nview == null || !nview.IsValid() || !GetEnabled(nview))
                 {
                     continue;
                 }
@@ -226,7 +232,14 @@ namespace Hearthmend
                 return 0;
             }
 
-            var repaired = 0;
+            if (hitCount == OverlapBuffer.Length && !_warnedBufferFull)
+            {
+                _warnedBufferFull = true;
+                Jotunn.Logger.LogWarning(
+                    $"Hearthmend: {OverlapBuffer.Length} colliders around {station.m_name}, some pieces may be skipped. Try a smaller Repair Radius.");
+            }
+
+            PendingMends.Clear();
             ProcessedPieces.Clear();
             var allowOther = PluginConfig.AllowRepairOther.Value;
             var respectWards = PluginConfig.RespectWards.Value;
@@ -266,11 +279,17 @@ namespace Hearthmend
                     continue;
                 }
 
-                if (wear.Repair())
-                {
-                    repaired++;
-                }
+                PendingMends.Add(wear);
             }
+
+            var repaired = PendingMends.Count;
+            if (repaired == 0)
+            {
+                return 0;
+            }
+
+            HearthmendPlugin.Instance.StartCoroutine(MendInTurn(PendingMends.ToArray()));
+            PendingMends.Clear();
 
             if (!suppressMessage
                 && repaired > 0
@@ -289,6 +308,40 @@ namespace Hearthmend
             }
 
             return repaired;
+        }
+
+        /// <summary>
+        /// One piece at a time so the mend reads as a wave, capped so a big base finishes in a few seconds.
+        /// </summary>
+        private static IEnumerator MendInTurn(WearNTear[] batch)
+        {
+            var wait = new WaitForSeconds(Mathf.Min(MendGapSeconds, MaxWaveSeconds / batch.Length));
+            for (var i = 0; i < batch.Length; i++)
+            {
+                var wear = batch[i];
+                if (wear != null && wear.Repair())
+                {
+                    PlayMendEffect(wear);
+                }
+
+                if (i < batch.Length - 1)
+                {
+                    yield return wait;
+                }
+            }
+        }
+
+        /// <summary>Same puff and sound the hammer plays on a successful repair (Player.Repair).</summary>
+        private static void PlayMendEffect(WearNTear wear)
+        {
+            var piece = wear.GetComponent<Piece>();
+            if (piece == null || piece.m_placeEffect == null || !piece.m_placeEffect.HasEffects())
+            {
+                return;
+            }
+
+            var t = piece.transform;
+            piece.m_placeEffect.Create(t.position, t.rotation);
         }
 
         internal static void AppendHoverHint(CraftingStation station, ref string result)
@@ -359,6 +412,11 @@ namespace Hearthmend
                 next
                     ? ModLocalization.L("hearthmend_toggle_on")
                     : ModLocalization.L("hearthmend_toggle_off"));
+
+            if (next)
+            {
+                PerformStationRepair(station, suppressMessage: false);
+            }
         }
     }
 

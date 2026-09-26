@@ -23,7 +23,7 @@ namespace Hearthmend
             if (loaded == 0)
             {
                 loc.AddTranslation("English", FallbackEnglish());
-                Jotunn.Logger.LogWarning("Hearthmend: Translations folder missing — English inline fallback");
+                Jotunn.Logger.LogWarning("Hearthmend: Translations folder missing, using the English fallback");
             }
         }
 
@@ -37,7 +37,7 @@ namespace Hearthmend
                 { "hearthmend_toggle_on", "Hearthmend is watching this station" },
                 { "hearthmend_toggle_off", "Hearthmend won't touch this station" },
                 { "hearthmend_repaired", "Mended {0} pieces" },
-                { "hearthmend_morning", "Morning mend — fixed {0} pieces" }
+                { "hearthmend_morning", "Woke up to {0} pieces mended" }
             };
         }
 
@@ -56,7 +56,7 @@ namespace Hearthmend
             }
             catch (Exception ex)
             {
-                Jotunn.Logger.LogWarning($"Hearthmend: failed loading {language} — {ex.Message}");
+                Jotunn.Logger.LogWarning($"Hearthmend: failed loading {language}: {ex.Message}");
                 return false;
             }
         }
