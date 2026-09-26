@@ -13,7 +13,7 @@ namespace Hearthmend
     {
         public const string PluginGUID = "com.blackhearthx.hearthmend";
         public const string PluginName = "Hearthmend";
-        public const string PluginVersion = "1.0.1";
+        public const string PluginVersion = "1.0.2";
 
         /// <summary>Vanilla Player.m_removeRayMask minus terrain; "vehicle" is where ships and carts live.</summary>
         internal static int PieceMask { get; private set; }

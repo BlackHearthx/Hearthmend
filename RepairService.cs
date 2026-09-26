@@ -19,6 +19,7 @@ namespace Hearthmend
         private const float TimerScanPeriod = 0.25f;
         private const float MendGapSeconds = 0.15f;
         private const float MaxWaveSeconds = 6f;
+        private const float TimerJitterSeconds = 3f;
 
         private static readonly List<WearNTear> PendingMends = new List<WearNTear>(256);
 
@@ -91,7 +92,10 @@ namespace Hearthmend
             MessageHud.instance?.ShowMessage(type, message);
         }
 
-        /// <summary>Timer mode: Repair Interval &gt; 0.</summary>
+        /// <summary>
+        /// Daytime mending. A watching station mends as soon as it is first seen near you,
+        /// then every Mend Every seconds, with a little jitter so stations do not all fire on one frame.
+        /// </summary>
         internal static void UpdateTimerLoop()
         {
             if (!PluginConfig.ModEnabled.Value)
@@ -99,7 +103,7 @@ namespace Hearthmend
                 return;
             }
 
-            var interval = PluginConfig.RepairInterval.Value;
+            var interval = PluginConfig.MendEvery.Value;
             if (interval <= 0f || Time.time < _nextLoopCheckTime)
             {
                 return;
@@ -144,25 +148,25 @@ namespace Hearthmend
                     continue;
                 }
 
-                if (!StationTimers.TryGetValue(station, out var last))
-                {
-                    last = 0f;
-                }
-
-                if (now - last < interval)
+                if (StationTimers.TryGetValue(station, out var due) && now < due)
                 {
                     continue;
                 }
 
-                StationTimers[station] = now;
+                ScheduleNext(station, now);
                 PerformStationRepair(station, suppressMessage: false);
             }
         }
 
-        /// <summary>Morning mode: Repair Interval == 0, on wake from sleep.</summary>
+        private static void ScheduleNext(CraftingStation station, float now)
+        {
+            StationTimers[station] = now + PluginConfig.MendEvery.Value + UnityEngine.Random.Range(0f, TimerJitterSeconds);
+        }
+
+        /// <summary>Wake from sleep: every watching station near you mends once, sharing one piece list.</summary>
         internal static void TriggerMorningRepair()
         {
-            if (!PluginConfig.ModEnabled.Value || PluginConfig.RepairInterval.Value > 0f)
+            if (!PluginConfig.ModEnabled.Value || !PluginConfig.MendOnWake.Value)
             {
                 return;
             }
@@ -183,6 +187,9 @@ namespace Hearthmend
             var nearbyLimit = PluginConfig.RepairRadius.Value + 50f;
             var nearbySqr = nearbyLimit * nearbyLimit;
             var total = 0;
+            var watching = 0;
+            var now = Time.time;
+            ProcessedPieces.Clear();
 
             for (var i = 0; i < stations.Count; i++)
             {
@@ -204,8 +211,12 @@ namespace Hearthmend
                     continue;
                 }
 
-                total += PerformStationRepair(station, suppressMessage: true);
+                watching++;
+                ScheduleNext(station, now);
+                total += PerformStationRepair(station, suppressMessage: true, shareProcessed: true);
             }
+
+            Jotunn.Logger.LogInfo($"Hearthmend: woke up, {watching} station(s) watching nearby, {total} piece(s) to mend");
 
             if (total > 0 && PluginConfig.ShowNotification.Value)
             {
@@ -213,7 +224,7 @@ namespace Hearthmend
             }
         }
 
-        internal static int PerformStationRepair(CraftingStation station, bool suppressMessage)
+        internal static int PerformStationRepair(CraftingStation station, bool suppressMessage, bool shareProcessed = false)
         {
             if (station == null)
             {
@@ -240,7 +251,11 @@ namespace Hearthmend
             }
 
             PendingMends.Clear();
-            ProcessedPieces.Clear();
+            if (!shareProcessed)
+            {
+                ProcessedPieces.Clear();
+            }
+
             var allowOther = PluginConfig.AllowRepairOther.Value;
             var respectWards = PluginConfig.RespectWards.Value;
 
@@ -253,12 +268,7 @@ namespace Hearthmend
                 }
 
                 var piece = col.GetComponentInParent<Piece>();
-                if (piece == null || !ProcessedPieces.Add(piece))
-                {
-                    continue;
-                }
-
-                if (!PieceBelongsToStation(station, piece))
+                if (piece == null || !PieceBelongsToStation(station, piece) || !ProcessedPieces.Add(piece))
                 {
                     continue;
                 }
@@ -290,6 +300,7 @@ namespace Hearthmend
 
             HearthmendPlugin.Instance.StartCoroutine(MendInTurn(PendingMends.ToArray()));
             PendingMends.Clear();
+            Jotunn.Logger.LogInfo($"Hearthmend: {station.m_name} is mending {repaired} piece(s)");
 
             if (!suppressMessage
                 && repaired > 0
@@ -415,6 +426,7 @@ namespace Hearthmend
 
             if (next)
             {
+                ScheduleNext(station, Time.time);
                 PerformStationRepair(station, suppressMessage: false);
             }
         }

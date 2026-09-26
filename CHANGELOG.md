@@ -1,5 +1,16 @@
 # Changelog
 
+## 1.0.2
+
+Stations keep working now. Before, a station mended once when you turned it on
+and then sat quiet until you slept, which looked like it had stopped. Now it
+checks again every thirty seconds while you are nearby, still mends when you
+wake up, and a station you left watching gets to work as soon as you come home.
+
+The old Repair Interval setting is replaced by Mend Every (seconds) and Mend On
+Wake. With several stations watching the same spot, the morning note now counts
+each piece once, and stations no longer all fire on the same frame.
+
 ## 1.0.1
 
 Ships and carts actually get mended now. The station was looking for pieces on

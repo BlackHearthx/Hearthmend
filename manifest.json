@@ -1,6 +1,6 @@
 {
   "name": "Hearthmend",
-  "version_number": "1.0.1",
+  "version_number": "1.0.2",
   "website_url": "https://github.com/BlackHearthx/Hearthmend",
   "description": "Hold Use on a craft station and it watches the homestead, mending what that station would fix with the hammer. Ships and carts too.",
   "dependencies": [

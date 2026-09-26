@@ -6,7 +6,8 @@ namespace Hearthmend
     {
         internal static ConfigEntry<bool> ModEnabled;
         internal static ConfigEntry<float> RepairRadius;
-        internal static ConfigEntry<float> RepairInterval;
+        internal static ConfigEntry<float> MendEvery;
+        internal static ConfigEntry<bool> MendOnWake;
         internal static ConfigEntry<bool> AllowRepairOther;
         internal static ConfigEntry<bool> RespectWards;
         internal static ConfigEntry<bool> ShowNotification;
@@ -25,11 +26,17 @@ namespace Hearthmend
                 20f,
                 "How far from a watching station (workbench, forge, stonecutter and so on) pieces get mended.");
 
-            RepairInterval = cfg.Bind(
+            MendEvery = cfg.Bind(
                 "2. Repair",
-                "Repair Interval (s)",
-                0f,
-                "Seconds between repairs while a station is watching. 0 = mend once when you wake from sleep.");
+                "Mend Every (s)",
+                30f,
+                "While you are near a watching station, it mends the damage around it this often. 0 turns daytime mending off.");
+
+            MendOnWake = cfg.Bind(
+                "2. Repair",
+                "Mend On Wake",
+                true,
+                "Every station watching near you also mends when you wake up from sleep.");
 
             AllowRepairOther = cfg.Bind(
                 "2. Repair",
